@@ -787,7 +787,7 @@ class Client {
 
         data = {
             ...data,
-            type: command.type,
+            type: 2,
             application_id: application.id,
             guild_id: server_id,
             channel_id: channel_id,
@@ -819,15 +819,8 @@ class Client {
                 },
                 attachments: [],
             },
-            nonce: this.clientData.generateUUID(),
         };
 
-        // data = new constructs.SendInteraction(
-        //     data,
-        //     this.info.session_id,
-        //     this.clientData.generateUUID(),
-        //     this.clientData.generateUUID()
-        // );
         return await this.fetch_request(`/interactions`, {
             isMultipartFormData: false,
             body: data,
