@@ -740,6 +740,22 @@ class Client {
   }
 
   /**
+     * Sends an interaction
+     * @param {string} channel_id Channel to send in
+     * @param {SendInteractionOpts} data Options
+     * @returns {Promise<object>}
+     */
+  async interactions(channel_id, data = SendInteractionOpts) {
+    await this.call_check(arguments);
+    data = new constructs.SendInteraction(data, this.info.session_id);
+    return await this.fetch_request(`/interactions`, {
+      isMultipartFormData: data.isMultipartFormData,
+      body: data.content,
+      method: "POST",
+    });
+  }
+
+  /**
    * Types in the channel given
    * @param {string} channel_id The channel ID to type in
    */

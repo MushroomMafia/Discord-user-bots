@@ -149,6 +149,132 @@ class SendMessage {
     }
 }
 
+/*
+{"type":2,
+"application_id":"936929561302675456", 
+"guild_id":"1088993371290349592", 
+"channel_id":"1088993785691787467", 
+"session_id":"d04fe8eb123222984df98f54c665e349",
+"data":{
+    "version":"987795925764280356", //??
+    "id":"972289487818334209", // Info command ID
+    "name":"info",
+    "type":1,
+    "options":[],
+    "application_command":{
+        "id":"972289487818334209", // Info command ID
+        "application_id":"936929561302675456", // application ID
+        "version":"987795925764280356", //??
+        "default_member_permissions":null,
+        "type":1,
+        "nsfw":false,
+        "name":"info", // Name of the command
+        "description":"View information about your profile.",
+        "dm_permission":true,
+        "contexts":null
+    },
+    "attachments":[]
+},
+"nonce":"1102105238573154304"}
+*/
+
+const SendInteractionOpts = {
+    type: 2,
+    application_id: "936929561302675456", // Mid Journey? //TODO get this from the "typing" resp
+    guild_id: "1088993371290349592", // Server ID
+    channel_id: "1088993785691787467", // Text Channel ID
+    session_id: "",
+    data: {
+        version: "987795925764280356", //??
+        id: "972289487818334209", // Info command ID
+        name: "info",
+        type: 1,
+        options: [],
+        application_command: {
+            id: "972289487818334209", // Info command ID
+            application_id: "936929561302675456", // application ID
+            version: "987795925764280356", //??
+            default_member_permissions: null,
+            type: 1,
+            nsfw: false,
+            name: "info", // Name of the command
+            description: "View information about your profile.",
+            dm_permission: true,
+            contexts: null
+        },
+        attachments: []
+    },
+    nonce: "1102105238573154304"
+};
+class SendInteraction {
+    /**
+     * Message send class for sending messages
+     * @param {SendMessageOpts} opts Defaults/options
+     */
+    constructor(opts = SendMessageOpts, session_id) {
+        const options = {
+            ...SendMessageOpts,
+            ...opts,
+        };
+
+        options.session_id = session_id 
+        const formData = new FormData();
+
+        const attachments = [];
+        if (Array.isArray(options.attachments) && options.attachments.length > 0) {
+            this.isMultipartFormData = true;
+
+            options.attachments.forEach((item, index) => {
+                if (!item) return;
+
+                switch (typeof item) {
+                    case "string": {
+                        item = {
+                            path: item,
+                        };
+                    }
+
+                    case "object": {
+                        if (!item.path) return;
+
+                        const filename = item.name || Path.basename(item.path) || `file-${index}`;
+                        formData.append(`files[${index}]`, FS.createReadStream(item.path), filename);
+                        attachments.push({
+                            id: index,
+                            filename,
+                            description: item.description || filename,
+                        });
+                        break;
+                    }
+                }
+            });
+
+            options.attachments = attachments;
+        }
+
+        this.content = {
+            content: options.content,
+            tts: options.tts,
+            embeds: options.embeds,
+            allowed_mentions: new MentionsLimiter(options.allowed_mentions),
+            message_reference:
+                options.reply !== null
+                    ? {
+                          message_id: options.reply,
+                      }
+                    : null,
+            components: null,
+            sticker_ids: options.stickers,
+            ...(attachments.length > 0 ? { attachments } : {}),
+        };
+
+        if (this.isMultipartFormData) {
+            formData.append("payload_json", this.content);
+            this.content = formData;
+        }
+    }
+}
+
 module.exports = {
     FetchRequestOpts: {
         method: "GET",
@@ -173,7 +299,9 @@ module.exports = {
     MentionsLimiterOpts,
     CustomStatusOpts,
     SendMessageOpts,
+    SendInteractionOpts,
     MentionsLimiter,
     CustomStatus,
     SendMessage,
+    SendInteraction,
 };
