@@ -760,6 +760,26 @@ class Client {
     });
   }
 
+  /*
+/api/v9/channels/1102078723357945957/application-commands/search?type=1&limit=10&command_ids=972289487818334209%2C938956540159881230%2C994261739745050684%2C1089233031056855195&include_applications=true
+*/
+
+  /**
+   * Search interations in channel
+   * @param {string} channel_id The channel ID to type in
+   */
+  async search_interactions(channel_id) {
+    await this.call_check(arguments);
+
+    return await this.fetch_request(
+      `channels/${channel_id}/application-commands/search?include_applications=true`,
+      {
+        body: null,
+        method: "GET",
+      }
+    );
+  }
+
   /**
    * Types in the channel given
    * @param {string} channel_id The channel ID to type in
