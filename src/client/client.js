@@ -741,13 +741,18 @@ class Client {
   }
 
   /**
-     * Sends an interaction
-     * @param {SendInteractionOpts} data Options
-     * @returns {Promise<object>}
-     */
+   * Sends an interaction
+   * @param {SendInteractionOpts} data Options
+   * @returns {Promise<object>}
+   */
   async send_interaction(data = SendInteractionOpts) {
     await this.call_check(arguments);
-    data = new constructs.SendInteraction(data, this.info.session_id);
+    data = new constructs.SendInteraction(
+      data,
+      this.info.session_id,
+      this.clientData.generateUUID(),
+      this.clientData.generateUUID()
+    );
     return await this.fetch_request(`/interactions`, {
       isMultipartFormData: false,
       body: data,

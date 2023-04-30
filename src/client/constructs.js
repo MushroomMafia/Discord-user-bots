@@ -269,7 +269,7 @@ class SendInteraction {
    * Message send class for sending messages
    * @param {SendMessageOpts} opts Defaults/options
    */
-  constructor(opts = SendMessageOpts, session_id) {
+  constructor(opts = SendMessageOpts, session_id, id, nonce) {
     let options = {
       ...SendMessageOpts,
       ...opts,
@@ -279,15 +279,15 @@ class SendInteraction {
       application_id: "1071788674380996628",
       guild_id: "555456113663934474",
       channel_id: "1102078723357945957",
-      session_id: "b274c797c267339480b442854e7d1792",
+      session_id: "",
       data: {
         version: "1089233031228825687",
-        id: "1089233031056855195",
+        id: id,
         name: "asia_en",
         type: 1,
         options: [{ type: 3, name: "mode", value: "solo" }],
         application_command: {
-          id: "1089233031056855195",
+          id: id,
           application_id: "1071788674380996628",
           version: "1089233031228825687",
           default_member_permissions: null,
@@ -312,9 +312,10 @@ class SendInteraction {
         },
         attachments: [],
       },
-      //   nonce: "1102141962854596608",
+      nonce: nonce,
     };
     options.session_id = session_id;
+    console.log(options);
   }
 }
 
