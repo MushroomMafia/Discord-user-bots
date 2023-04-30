@@ -1,5 +1,5 @@
 {
-  "name": "discord-user-bots",
+  "name": "@MushroomMafia/discord-user-bots",
   "version": "1.6.0",
   "description": "A library that allows you to use the full potential of Discords API to create good user bots, and create accounts.",
   "main": "src/exports.js",
@@ -7,10 +7,7 @@
     "test": "node tests/functions.js",
     "test2": "node tests/test_update_list_members.js"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Someguy1834/Discord-user-bots.git"
-  },
+  "repository": "https://github.com/MushroomMafia/Discord-user-bots.git",
   "bugs": {
     "url": "https://github.com/Someguy1834/Discord-user-bots/issues"
   },
