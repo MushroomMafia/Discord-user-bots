@@ -274,7 +274,46 @@ class SendInteraction {
       ...SendMessageOpts,
       ...opts,
     };
-
+    options = {
+      type: 2,
+      application_id: "1071788674380996628",
+      guild_id: "555456113663934474",
+      channel_id: "1102078723357945957",
+      session_id: "b274c797c267339480b442854e7d1792",
+      data: {
+        version: "1089233031228825687",
+        id: "1089233031056855195",
+        name: "asia_en",
+        type: 1,
+        options: [{ type: 3, name: "mode", value: "solo" }],
+        application_command: {
+          id: "1089233031056855195",
+          application_id: "1071788674380996628",
+          version: "1089233031228825687",
+          default_member_permissions: null,
+          type: 1,
+          nsfw: false,
+          name: "asia_en",
+          description: "Guess Asia's capital cities !",
+          dm_permission: true,
+          contexts: null,
+          options: [
+            {
+              type: 3,
+              name: "mode",
+              description: "Choose a mode :",
+              required: true,
+              choices: [
+                { name: "solo", value: "solo" },
+                { name: "multi", value: "multi" },
+              ],
+            },
+          ],
+        },
+        attachments: [],
+      },
+      //   nonce: "1102141962854596608",
+    };
     options.session_id = session_id;
   }
 }
