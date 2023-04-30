@@ -774,7 +774,6 @@ class Client {
     return await this.fetch_request(
       `channels/${channel_id}/application-commands/search?include_applications=true`,
       {
-        body: null,
         method: "GET",
       }
     );
