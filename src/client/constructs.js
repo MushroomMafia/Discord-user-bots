@@ -270,7 +270,7 @@ class SendInteraction {
    * @param {SendMessageOpts} opts Defaults/options
    */
   constructor(opts = SendMessageOpts, session_id) {
-    const options = {
+    let options = {
       ...SendMessageOpts,
       ...opts,
     };
