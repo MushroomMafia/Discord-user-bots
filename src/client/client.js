@@ -772,7 +772,7 @@ class Client {
     await this.call_check(arguments);
 
     return await this.fetch_request(
-      `channels/${channel_id}/application-commands/search?include_applications=true`,
+      `channels/${channel_id}/application-commands/search?type=1&include_applications=true`,
       {
         method: "GET",
       }
