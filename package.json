@@ -1,6 +1,6 @@
 {
   "name": "@MushroomMafia/discord-user-bots",
-  "version": "1.6.3",
+  "version": "1.6.4",
   "description": "A library that allows you to use the full potential of Discords API to create good user bots, and create accounts.",
   "main": "src/exports.js",
   "scripts": {
@@ -30,5 +30,8 @@
     "https-proxy-agent": "^5.0.1",
     "node-fetch": "^2.6.7",
     "ws": "^8.3.0"
+  },
+  "devDependencies": {
+    "prettier": "^2.8.7"
   }
 }
