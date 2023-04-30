@@ -741,16 +741,15 @@ class Client {
 
   /**
      * Sends an interaction
-     * @param {string} channel_id Channel to send in
      * @param {SendInteractionOpts} data Options
      * @returns {Promise<object>}
      */
-  async interactions(channel_id, data = SendInteractionOpts) {
+  async send_interaction(data = SendInteractionOpts) {
     await this.call_check(arguments);
     data = new constructs.SendInteraction(data, this.info.session_id);
     return await this.fetch_request(`/interactions`, {
-      isMultipartFormData: data.isMultipartFormData,
-      body: data.content,
+      isMultipartFormData: false,
+      body: data,
       method: "POST",
     });
   }
