@@ -21,6 +21,7 @@ const ProxyHTTPS = require("https-proxy-agent");
 const {
   FetchRequestOpts,
   SendMessageOpts,
+  SendInteractionOpts,
   CustomStatusOpts,
   CreateInviteOpts,
   BotConfigOpts,
