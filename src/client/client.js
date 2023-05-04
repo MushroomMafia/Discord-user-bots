@@ -16,6 +16,41 @@
  *
  */
 
+
+/*
+    Emil's Notes
+    * new Client()
+        Does setup stuff. Begins entry point into the bot application with check_token().
+        If the token is authenticated then we create the websocket connection to discord. 
+        
+    * createWS()
+        Upon message.t === "READY" is where this.on.ready() is called which is the entry point in our 
+        prejourney code. Now that I think of it there's not really a point in separating the two repos out.
+        we could have packages/discord_bot and within that /bot and /server will live. Code in /server
+        will be the entry point into this. All bot related stuff should just be housed in /bot.
+
+        Refactor - Replace the massive switch code with a simple object, defined in another file, with
+        the pattern of key = message.t and value = callbackFunc => {}. Replace all the code in each case
+        into the body of the callbackFunc related to matching message.t switch match.
+
+    * callCheck()
+        Is used to check client state and arguments before matching requests to Discord. 
+        Any function that wants to call discord has to call callCheck() at the top to prevent 
+        any issues.
+
+        Refactor - Pattern seems pretty obvious, but the name escapes me. We'll have all functions
+        that interact with discord that call callCheck() in a wrapper function or class or interface. 
+        This way we only have to have that code callCheck() once and it'll be easier to tell which functions are used
+        to interact with discord in anyway.
+
+        Any functions that fit the pattern for the above callCheck() refactor should be placed in their own
+        folder / files hierarchy. Purpose is to improve codebase organization by separating a whopping 27
+        functions into their own folder (or at the very least file). I want to make client.js more readable
+        and high level. Abstract our code base by reading a high level blue print then on any specifics like
+        those discord functions or the swtich cases we can simply use the power of our IDEs to navigate over
+        to see what's specifically going on.
+*/
+
 const WebSocket = require("ws");
 const ProxyHTTPS = require("https-proxy-agent");
 const {
@@ -31,7 +66,9 @@ const {
     DiscordAPIError,
     DiscordUserBotsInternalError,
 } = require("../util/error.js");
-const { ReadyStates } = require("../util/enums.js");
+const {
+    ReadyStates
+} = require("../util/enums.js");
 const DiscordEvents = require("./events.js");
 const constructs = require("./constructs.js");
 const packets = require("../util/packets.js");
@@ -61,7 +98,7 @@ class Client {
         this.on = new DiscordEvents();
         this.requester = new Requester();
         this.clientData = new ClientData();
-        this.clientData.authorization = this.token;
+        this.clientData.authorization = this.token; // Todo - Gotta automate getting token
         this.set_config(config);
         this.check_token().then(async (res) => {
             if (res === true) {
@@ -85,6 +122,8 @@ class Client {
             origin: this.requester.url,
             agent: this.requester.proxy,
         });
+
+        // Todo - learn how websockets work
         this.ws.on("message", (message) => {
             message = JSON.parse(message);
             if (message.t !== null) this.messageCounter += 1;
@@ -99,7 +138,7 @@ class Client {
                             );
                         this.heartbeattimer = message.d.heartbeat_interval;
                         this.heartbeatinterval = setInterval(() => {
-                            const packet = new packets.HeartBeat(
+                            const packet = new packets.HeartBeat( // todo - what are these packets for
                                 this.messageCounter
                             );
                             this.ws.send(JSON.stringify(packet));
@@ -138,6 +177,10 @@ class Client {
                     break;
                 }
                 case "APPLICATION_COMMAND_CREATE": {
+                    // this.on."application_command_create"(message.id)
+
+                    // this.on["application_command_create"] 
+
                     this.on.application_command_create(message.d);
                     break;
                 }
@@ -491,6 +534,7 @@ class Client {
     async call_check(args) {
         if (this.ready_status === ReadyStates.CONNECTING) {
             // Waiting for connection before preforming request...
+            // Todo - What is this await for?
             await new Promise((res) => {
                 this.readyStatusCallback = () => {
                     res();
@@ -503,6 +547,10 @@ class Client {
             throw new DiscordUserBotsError(
                 `Client is in a ${ReadyStates[this.ready_status]} state`
             );
+
+        // Todo - How exactly does this check work?
+        // It doesn't look to be checking against discords arguments, but
+        // only the object that we send it making sure it's not null
         for (const arg of args) {
             if (!arg)
                 throw new DiscordUserBotsError(`Invalid parameter "${arg}"`);
@@ -622,8 +670,7 @@ class Client {
                 before_message_id === false
                     ? ""
                     : `before=${before_message_id}&`
-            }limit=${limit}`,
-            {
+            }limit=${limit}`, {
                 method: "GET",
                 body: null,
             }
@@ -668,8 +715,7 @@ class Client {
         await this.call_check(arguments);
         const code = this.parse_invite_link(invite);
         return await this.fetch_request(
-            `invites/${code}?inputValue=https%3A%2F%2Fdiscord.gg%2F${code}&with_counts=true&with_expiration=true`,
-            {
+            `invites/${code}?inputValue=https%3A%2F%2Fdiscord.gg%2F${code}&with_counts=true&with_expiration=true`, {
                 method: "GET",
                 body: null,
             }
@@ -685,7 +731,9 @@ class Client {
         await this.call_check(arguments);
         return await this.fetch_request(`users/@me/guilds/${guild_id}`, {
             method: "DELETE",
-            body: { lurking: false },
+            body: {
+                lurking: false
+            },
         });
     }
 
@@ -728,8 +776,7 @@ class Client {
     async edit(message_id, channel_id, content) {
         await this.call_check(arguments);
         return await this.fetch_request(
-            `channels/${channel_id}/messages/${message_id}`,
-            {
+            `channels/${channel_id}/messages/${message_id}`, {
                 body: {
                     content: content,
                 },
@@ -747,8 +794,7 @@ class Client {
     async delete_message(target_message_id, channel_id) {
         await this.call_check(arguments);
         return await this.fetch_request(
-            `channels/${channel_id}/messages/${target_message_id}`,
-            {
+            `channels/${channel_id}/messages/${target_message_id}`, {
                 body: null,
                 method: "DELETE",
             }
@@ -768,6 +814,8 @@ class Client {
         command_name,
         data = SendInteractionOpts
     ) {
+        // Todo - what is arguments and its type IArguments?
+        // Assuming it's the arguments to this function, but wanna double check.
         await this.call_check(arguments);
 
         const search_res = await this.search_interactions(channel_id);
@@ -797,13 +845,11 @@ class Client {
                 id: command.id,
                 name: command.name,
                 type: command.type,
-                options: [
-                    {
-                        type: command.options[0].type,
-                        name: command.options[0].name,
-                        value: message,
-                    },
-                ],
+                options: [{
+                    type: command.options[0].type,
+                    name: command.options[0].name,
+                    value: message,
+                }, ],
                 application_command: {
                     id: command.id,
                     application_id: application.id,
@@ -829,15 +875,14 @@ class Client {
     }
 
     /**
-     * Search interations in channel
+     * Search interactions in channel
      * @param {string} channel_id The channel ID to type in
      */
     async search_interactions(channel_id) {
         await this.call_check(arguments);
 
         return await this.fetch_request(
-            `channels/${channel_id}/application-commands/search?type=1&limit=10&include_applications=true`,
-            {
+            `channels/${channel_id}/application-commands/search?type=1&limit=10&include_applications=true`, {
                 method: "GET",
             }
         );
@@ -910,8 +955,7 @@ class Client {
     async remove_person_from_group(person_id, channel_id) {
         await this.call_check(arguments);
         return await this.fetch_request(
-            `channels/${channel_id}/recipients/${person_id}`,
-            {
+            `channels/${channel_id}/recipients/${person_id}`, {
                 body: null,
                 method: "DELETE",
             }
@@ -947,8 +991,7 @@ class Client {
     ) {
         await this.call_check(arguments);
         return await this.fetch_request(
-            `guilds/templates/${guild_template_code}`,
-            {
+            `guilds/templates/${guild_template_code}`, {
                 body: {
                     name: name,
                     icon: icon,
@@ -975,8 +1018,7 @@ class Client {
     ) {
         await this.call_check(arguments);
         return await this.fetch_request(
-            `channels/${channel_id}/messages/${message_id}/threads`,
-            {
+            `channels/${channel_id}/messages/${message_id}/threads`, {
                 body: {
                     name: name,
                     type: 11,
@@ -1029,8 +1071,7 @@ class Client {
     async join_thread(thread_id) {
         await this.call_check(arguments);
         return await this.fetch_request(
-            `/channels/${thread_id}/thread-members/@me`,
-            {
+            `/channels/${thread_id}/thread-members/@me`, {
                 body: null,
                 method: "PUT",
             }
@@ -1049,8 +1090,7 @@ class Client {
         return await this.fetch_request(
             `channels/${channel_id}/messages/${message_id}/reactions/${encodeURI(
                 emoji
-            )}/%40me`,
-            {
+            )}/%40me`, {
                 body: null,
                 method: "PUT",
             }
@@ -1069,8 +1109,7 @@ class Client {
         return await this.fetch_request(
             `channels/${channel_id}/messages/${message_id}/reactions/${encodeURI(
                 emoji
-            )}/%40me`,
-            {
+            )}/%40me`, {
                 body: null,
                 method: "DELETE",
             }
@@ -1156,7 +1195,11 @@ class Client {
                 op: 14,
                 d: {
                     guild_id: guild_id,
-                    channels: { [channel_id]: [[0, length]] },
+                    channels: {
+                        [channel_id]: [
+                            [0, length]
+                        ]
+                    },
                 },
             })
         );
